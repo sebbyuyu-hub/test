@@ -490,14 +490,14 @@
         link.download = `記帳備份_${new Date().toISOString().slice(0,10)}.csv`;
         link.click();
     }
-</script>
-<script>
-if ('serviceWorker' in navigator) {
+    if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/pwabuilder-sw.js') // 確保檔名正確
     .then(() => console.log('Service Worker Registered'))
     .catch(error => console.error('Service Worker registration failed:', error));
-}
+    }
+
 </script>
 </body>
 </html>
+
 
