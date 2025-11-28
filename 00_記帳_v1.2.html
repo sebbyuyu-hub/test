@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>阿球的記帳表(・∀・)つ⑩</title>
+    <style>
+        /* 新配色方案：#c8b8db, #ffe787, #ffc759, #272932, #eaf6ff */
+        :root {
+            --primary-color: #eaf6ff; /* 亮白文字 */
+            --accent-color: #c8b8db; /* 主題紫羅蘭 (強調色) */
+            --bg-color: #272932; /* 深木炭灰 (背景) */
+            --card-bg: #30333d; /* 略淺的卡片背景 */
+            --stat-bg: #3e414c; /* 統計區塊背景 */
+            --input-bg: #3e414c; /* 輸入框背景 */
+            --input-border: #5a5e6b; /* 柔和邊框 */
+            --success-color: #ffe787; /* 亮金黃 (金額/成功) */
+            --warning-color: #ffc759; /* 溫暖琥珀橙 (警告/刪除) */
+            --glow-shadow: 0 0 10px rgba(200, 184, 219, 0.4); /* 柔和紫羅蘭光影 */
+        }
+
+        body {
+            font-family: 'Segoe UI', Microsoft JhengHei, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            color: var(--primary-color);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        /* 通用卡片樣式 */
+        .card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 8px; 
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5); /* 顯著陰影 */
+            margin-bottom: 20px;
+            border: 1px solid var(--input-border);
+        }
+
+        h2 { 
+            margin-top: 0; 
+            color: var(--primary-color); 
+            border-bottom: 2px solid var(--accent-color); 
+            padding-bottom: 10px; 
+            display: inline-block;
+            font-weight: 500;
+        }
+        h3 { 
+            margin: 0 0 10px 0; 
+            color: var(--accent-color); 
+            font-size: 1.1em; 
+            font-weight: 400;
+        }
+
+        /* 表單樣式 */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+        }
+
+        .form-group { margin-bottom: 10px; }
+        label { 
+            display: block; 
+            margin-bottom: 5px; 
+            font-weight: 400; 
+            font-size: 0.9em; 
+            color: var(--primary-color);
+        }
+        input, select {
+            width: 100%; 
+            padding: 10px; 
+            border: 1px solid var(--input-border); 
+            border-radius: 4px; 
+            box-sizing: border-box; 
+            font-size: 1em;
+            background-color: var(--input-bg); 
+            color: var(--primary-color); 
+            /* 讓下拉選單在深色背景下保持一致 */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+        input:focus, select:focus { 
+            border-color: var(--accent-color); 
+            outline: none; 
+            box-shadow: 0 0 5px var(--accent-color);
+        }
+
+        /* 按鈕樣式 */
+        button.btn-add {
+            background-color: var(--accent-color); 
+            color: var(--bg-color); /* 深色文字在高亮按鈕上 */
+            border: none; 
+            padding: 12px 20px;
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 1em; 
+            width: 100%; 
+            margin-top: 15px;
+            transition: background 0.2s, box-shadow 0.2s; 
+            font-weight: bold;
+        }
+        button.btn-add:hover { 
+            background-color: #b9a8cf; 
+            box-shadow: var(--glow-shadow); 
+        }
+
+        /* 統計區塊樣式 */
+        .stat-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .stat-btn {
+            padding: 8px 16px;
+            border: 1px solid var(--accent-color);
+            background: transparent;
+            color: var(--accent-color);
+            border-radius: 20px; 
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9em;
+        }
+
+        .stat-btn.active, .stat-btn:hover {
+            background: var(--accent-color);
+            color: var(--bg-color);
+            box-shadow: 0 0 5px var(--accent-color);
+        }
+
+        .stat-result-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .stat-box {
+            background: var(--stat-bg);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid var(--success-color); /* 使用金色強調統計 */
+        }
+
+        .stat-title { font-weight: bold; font-size: 1.1em; margin-bottom: 5px; color: var(--primary-color); }
+        .stat-money { font-size: 0.95em; color: var(--primary-color); line-height: 1.4; }
+        .currency-label { font-weight: bold; color: var(--success-color); }
+
+        /* 列表樣式 */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--input-bg); } 
+        th { background-color: var(--stat-bg); color: var(--accent-color); font-weight: 600; white-space: nowrap; }
+        tr:hover { background-color: #3e414c; } /* 深色懸停效果 */
+        
+        .badge {
+            display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 0.8em; color: var(--bg-color); /* 讓徽章文字為深色 */
+            font-weight: bold;
+        }
+        /* 保持類別顏色高對比度 (與 dark mode 兼容) */
+        .bg-儲值 { background: #6a0572; color: white; }
+        .bg-課金 { background: #0077b6; color: white; }
+        .bg-宅物 { background: #7c4dff; color: white; }
+        .bg-日常 { background: #00b894; color: white; }
+        .bg-吃喝 { background: #d63031; color: white; }
+        .bg-扣款 { background: #e17055; color: white; }
+        .bg-其他 { background: #636e72; color: white; }
+        
+        /* 必要性顏色使用主題色 */
+        .bg-必要 { background: var(--success-color); color: var(--bg-color); }
+        .bg-非必要 { background: var(--warning-color); color: var(--bg-color); } 
+        .bg-上供 { background: var(--accent-color); color: var(--bg-color); } 
+
+        .amount { font-weight: bold; color: var(--success-color); } 
+        .delete-btn { color: var(--warning-color); cursor: pointer; border: none; background: none; font-weight: bold; }
+        .delete-btn:hover { text-decoration: underline; }
+
+        .tools-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .btn-export { 
+            background-color: var(--warning-color); /* 匯出使用琥珀橙 */
+            color: var(--bg-color); 
+            border: none; 
+            padding: 8px 15px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 0.9em;
+        }
+
+        /* 響應式 */
+        @media (max-width: 600px) {
+            .form-grid { grid-template-columns: 1fr; }
+            th, td { padding: 8px; font-size: 0.9em; }
+            .hide-mobile { display: none; }
+            .stat-result-container { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="card">
+        <h2>(・∀・)つ⑩再花錢呀</h2>
+        <form id="expenseForm">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>日期</label>
+                    <input type="date" id="date" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>消費類別</label>
+                    <select id="category">
+                        <option value="儲值">儲值</option>
+                        <option value="課金">課金</option>
+                        <option value="宅物">宅物</option>
+                        <option value="日常">日常</option>
+                        <option value="吃喝">吃喝</option>
+                        <option value="扣款">扣款</option>
+                        <option value="其他">其他</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>消費必要性</label>
+                    <select id="necessity">
+                        <option value="必要">必要</option>
+                        <option value="非必要">非必要</option>
+                        <option value="上供">上供</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>金額</label>
+                    <input type="number" id="amount" placeholder="0" min="0" step="0.01" required>
+                </div>
+
+                <div class="form-group">
+                    <label>幣別</label>
+                    <select id="currency">
+                        <option value="TWD">台幣 (TWD)</option>
+                        <option value="JPY">日幣 (JPY)</option>
+                        <option value="CNY">人民幣 (CNY)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>付款方式</label>
+                    <select id="paymentMethod">
+                        <option value="現金">現金</option>
+                        <option value="信用卡">信用卡</option>
+                        <option value="金融卡">金融卡</option>
+                    </select>
+                </div>
+
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label>消費項目 (備註)</label>
+                    <input type="text" id="item" placeholder="自行填寫 (備註)" required>
+                </div>
+            </div>
+            <button type="submit" class="btn-add">＋ 新增紀錄</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h3>📊 資金統計 | 總覽</h3>
+        <div class="stat-controls">
+            <button class="stat-btn active" onclick="updateStats('day', this)">依日期</button>
+            <button class="stat-btn" onclick="updateStats('month', this)">依月份</button>
+            <button class="stat-btn" onclick="updateStats('year', this)">依年份</button>
+            <button class="stat-btn" onclick="updateStats('category', this)">依類別</button>
+            <button class="stat-btn" onclick="updateStats('necessity', this)">依必要性</button> 
+            <button class="stat-btn" onclick="updateStats('method', this)">依付款方式</button>
+        </div>
+        <div id="statResult" class="stat-result-container">
+            </div>
+    </div>
+
+    <div class="card">
+        <div class="tools-header">
+            <h2>消費明細</h2>
+            <button class="btn-export" onclick="exportToCSV()">匯出 Excel</button>
+        </div>
+        
+        <div style="overflow-x:auto;">
+            <table id="expenseTable">
+                <thead>
+                    <tr>
+                        <th>日期</th>
+                        <th>類別</th>
+                        <th>必要性</th> 
+                        <th>金額</th>
+                        <th>項目 (備註)</th>
+                        <th class="hide-mobile">付款</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="expenseList"></tbody>
+            </table>
+        </div>
+        <p style="text-align: center; color: var(--input-border); font-size: 0.8em; margin-top: 20px;">
+            * 資料儲存於本地瀏覽器，建議定期匯出備份。
+        </p>
+    </div>
+</div>
+
+<script>
+    // 資料變數
+    let expenses = [];
+    let currentStatMode = 'day';
+
+    // 初始化
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('date').valueAsDate = new Date(); // 預設今天
+        loadExpenses();
+    });
+
+    const form = document.getElementById('expenseForm');
+    
+    // 表單送出
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const newExpense = {
+            id: Date.now(),
+            date: document.getElementById('date').value,
+            category: document.getElementById('category').value,
+            necessity: document.getElementById('necessity').value, 
+            item: document.getElementById('item').value,
+            amount: parseFloat(document.getElementById('amount').value),
+            currency: document.getElementById('currency').value,
+            method: document.getElementById('paymentMethod').value
+        };
+
+        expenses.unshift(newExpense);
+        saveExpenses();
+        renderTable();
+        // 確保統計在新增後更新，並保持當前模式
+        updateStats(currentStatMode, document.querySelector(`.stat-btn[onclick*="${currentStatMode}"]`)); 
+        
+        form.reset();
+        document.getElementById('date').valueAsDate = new Date();
+        document.getElementById('currency').value = "TWD"; 
+        document.getElementById('paymentMethod').value = "現金";
+        document.getElementById('necessity').value = "必要"; 
+        document.getElementById('category').value = "儲值"; 
+    });
+
+    // 儲存與讀取
+    function saveExpenses() {
+        localStorage.setItem('myExpensesProMax', JSON.stringify(expenses)); 
+    }
+
+    function loadExpenses() {
+        const stored = localStorage.getItem('myExpensesProMax');
+        if (stored) {
+            expenses = JSON.parse(stored);
+            // 資料清洗：防止舊資料沒有 category 或 necessity 欄位
+            expenses.forEach(e => {
+                if(!e.category) e.category = '未分類';
+                if(!e.necessity) e.necessity = '必要'; 
+            });
+        }
+        renderTable();
+        // 初始化時呼叫統計
+        updateStats('day', document.querySelector('.stat-btn.active'));
+    }
+
+    // 渲染列表
+    function renderTable() {
+        const list = document.getElementById('expenseList');
+        list.innerHTML = '';
+
+        expenses.forEach(exp => {
+            // 由於 CSS 中將類別名稱直接作為 class，這裡修正以符合新的選項 (如：儲值)
+            const categoryClassKey = exp.category.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, '');
+            const necessityClassKey = exp.necessity.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, '');
+            
+            const badgeClass = `bg-${categoryClassKey}`;
+            const necessityClass = `bg-${necessityClassKey}`;
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${exp.date}</td>
+                <td><span class="badge ${badgeClass}">${exp.category}</span></td>
+                <td><span class="badge ${necessityClass}">${exp.necessity}</span></td>
+                <td>
+                    <span class="amount">${exp.amount}</span> <small>${exp.currency}</small>
+                </td>
+                <td>${exp.item}</td>
+                <td class="hide-mobile">${exp.method}</td>
+                <td><button class="delete-btn" onclick="deleteExpense(${exp.id})">刪除</button></td>
+            `;
+            list.appendChild(row);
+        });
+    }
+
+    function deleteExpense(id) {
+        if(confirm('確定刪除這筆紀錄？')) {
+            expenses = expenses.filter(exp => exp.id !== id);
+            saveExpenses();
+            renderTable();
+            updateStats(currentStatMode, document.querySelector(`.stat-btn[onclick*="${currentStatMode}"]`));
+        }
+    }
+
+    // --- 核心統計功能 ---
+    function updateStats(mode, clickedButton) {
+        currentStatMode = mode;
+        
+        // 更新按鈕樣式
+        document.querySelectorAll('.stat-btn').forEach(btn => btn.classList.remove('active'));
+        if (clickedButton) {
+             clickedButton.classList.add('active');
+        } else {
+            document.querySelector(`.stat-btn[onclick*="${mode}"]`).classList.add('active');
+        }
+
+
+        const container = document.getElementById('statResult');
+        container.innerHTML = '';
+
+        // 1. 分組資料
+        const groups = {};
+        expenses.forEach(exp => {
+            let key = '';
+            if (mode === 'day') key = exp.date;
+            else if (mode === 'month') key = exp.date.substring(0, 7); 
+            else if (mode === 'year') key = exp.date.substring(0, 4);  
+            else if (mode === 'category') key = exp.category;
+            else if (mode === 'method') key = exp.method;
+            else if (mode === 'necessity') key = exp.necessity; 
+
+            if (!groups[key]) groups[key] = {};
+            
+            if (!groups[key][exp.currency]) groups[key][exp.currency] = 0;
+            groups[key][exp.currency] += exp.amount;
+        });
+
+        // 2. 排序 (日期類由新到舊，其他順序)
+        const sortedKeys = Object.keys(groups).sort((a, b) => {
+            if (mode === 'day' || mode === 'month' || mode === 'year') {
+                return b.localeCompare(a); 
+            }
+            return a.localeCompare(b); 
+        }); 
+
+        if (sortedKeys.length === 0) {
+            container.innerHTML = `<div style="color:var(--input-border); padding:10px;">尚無數據紀錄。</div>`;
+            return;
+        }
+
+        // 3. 產生統計卡片
+        sortedKeys.forEach(key => {
+            const currencies = groups[key];
+            let moneyHtml = '';
+            for (let curr in currencies) {
+                moneyHtml += `<div><span class="currency-label">${curr}</span>: ${currencies[curr].toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>`;
+            }
+
+            const box = document.createElement('div');
+            box.className = 'stat-box';
+            box.innerHTML = `
+                <div class="stat-title">${key}</div>
+                <div class="stat-money">${moneyHtml}</div>
+            `;
+            container.appendChild(box);
+        });
+    }
+
+    // 匯出 CSV
+    function exportToCSV() {
+        if (expenses.length === 0) { alert("沒有記錄可匯出。"); return; }
+        let csv = "\uFEFF日期,類別,必要性,項目,金額,幣別,付款方式\n"; 
+        expenses.forEach(e => {
+            const safeItem = `"${(e.item || '').replace(/"/g, '""')}"`;
+            csv += `${e.date},${e.category},${e.necessity},${safeItem},${e.amount},${e.currency},${e.method}\n`;
+        });
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `記帳備份_${new Date().toISOString().slice(0,10)}.csv`;
+        link.click();
+    }
+</script>
+
+</body>
+</html>
