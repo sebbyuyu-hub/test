@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
+    <link rel="manifest" href="/manifest.json">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>阿球的記帳表(・∀・)つ⑩</title>
@@ -490,6 +491,13 @@
         link.click();
     }
 </script>
-
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/pwabuilder-sw.js') // 確保檔名正確
+    .then(() => console.log('Service Worker Registered'))
+    .catch(error => console.error('Service Worker registration failed:', error));
+}
+</script>
 </body>
 </html>
+
