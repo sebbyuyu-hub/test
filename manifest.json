@@ -1,11 +1,21 @@
 {
-  "background_color": "#272932",
-  "dir": "ltr",
+  "name": "阿球的記帳表(・∀・)つ⑩",
+  "short_name": "阿球記帳",
+  "start_url": "./index.html",
   "display": "standalone",
-  "name": "(・∀・)つ⑩再花錢呀",
-  "orientation": "any",
-  "scope": "/",
-  "short_name": "(・∀・)つ⑩再花錢呀",
-  "start_url": "https://sebbyuyu-hub.github.io/test/",
-  "theme_color": "#c8b8db"
+  "background_color": "#272932",
+  "theme_color": "#c8b8db",
+  "description": "本地儲存的個人記帳網頁應用程式。",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
 }
